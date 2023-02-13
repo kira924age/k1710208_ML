@@ -39,9 +39,10 @@ class Analytics:
         show_feature_num = 20
 
         result = permutation_importance(
-            model,
-            X_val,
-            y_val,
+            estimator=model,
+            X=X_val,
+            y=y_val,
+            scoring="neg_mean_absolute_error",
             n_repeats=10,
             random_state=42,
             n_jobs=-1,
