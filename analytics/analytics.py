@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 import seaborn as sns
-from sklearn.inspection import permutation_importance
+from sklearn.inspection import (PartialDependenceDisplay, partial_dependence,
+                                permutation_importance)
 
 
 class Analytics:
@@ -68,6 +69,34 @@ class Analytics:
             fliersize=0.5,
         )
         plt.subplots_adjust(left=0.55)
+        plt.savefig(f"{self.output_dir}/{filename}.png")
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def plot_pdp(self, model, X, filename):
+        target_idx = 0
+        # target_idx = X.columns.index("weighted_mean_unfilled_d_states")
+        # target_idx = X.columns.index("weighted_mean_group")
+
+        features, feature_names = [(target_idx,)], X.columns
+
+        X = X.to_pandas()
+
+        deciles = {0: np.linspace(0, 1, num=5)}
+        pd_results = partial_dependence(
+            model, X, features=target_idx, kind="average", grid_resolution=100
+        )
+        display = PartialDependenceDisplay(
+            [pd_results],
+            features=features,
+            feature_names=feature_names,
+            target_idx=0,
+            deciles=deciles,
+        )
+        display.plot()
+
         plt.savefig(f"{self.output_dir}/{filename}.png")
 
         plt.clf()

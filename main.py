@@ -30,8 +30,8 @@ def main():
     start_time = time.time()
     directory_name = init()
 
-    dataset_df = pl.read_csv("data/dataset.csv").sample(n=10000, seed=42)
-    # dataset_df = pl.read_csv("data/dataset.csv")
+    dataset_df = pl.read_csv("data/dataset.csv")
+    # dataset_df = pl.read_csv("data/dataset.csv").sample(n=10000, seed=42)
 
     n_samples = len(dataset_df)
     logging.info(f"number of all samples: {n_samples}")
@@ -91,7 +91,12 @@ def main():
         y_val=y_test.to_numpy().ravel(),
         columns=X_test.columns,
         n_samples=n_samples,
-        filename="pfi.png",
+        filename="pfi",
+    )
+    analytics.plot_pdp(
+        model=model.model,
+        X=X_test,
+        filename="pdp",
     )
 
     end_time = time.time()
