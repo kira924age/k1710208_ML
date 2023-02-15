@@ -40,8 +40,14 @@ def main():
     y = dataset_df.select(["y_relaxed"])
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=42
+        X, y, test_size=0.1, random_state=42
     )
+
+    analytics = Analytics(output_dir=f"result/{directory_name}")
+    # analytics.get_cv_score(X=X_train, y=y_train, algorithm="LightGBM")
+    analytics.get_cv_score(X=X_train, y=y_train, algorithm="Lasso")
+
+    return
 
     logging.info(f"training sample number: {len(X_train)}")
     logging.info(f"testing sample number: {len(X_test)}")
@@ -51,16 +57,14 @@ def main():
         + "\n".join([" " * 4 + column for column in X_train.columns])
     )
 
-    model = ML_model(
-        X_train=X_train.to_numpy(), y_train=y_train.to_series().to_numpy()
-    )
+    model = ML_model(X_train=X_train, y_train=y_train)
     logging.info(f"TRAIN MAE: {model.train_mae:.4f}")
     logging.info(f"TRAIN R^2: {model.train_r2_score:.4f}")
 
     print(f"train MAE = {model.train_mae:.4f}")
     print(f"train r^2 = {model.train_r2_score:.4f}")
 
-    y_test_pred = model.predict(X_test.to_numpy())
+    y_test_pred = model.predict(X_test)
     test_mae = mean_absolute_error(
         y_true=y_test.to_numpy(), y_pred=y_test_pred
     )
@@ -85,14 +89,14 @@ def main():
         filename="(test)true_vs_predicted_plot_graph",
         title=f"[TEST] n={n_samples}",
     )
-    analytics.plot_pfi(
-        model=model.model,
-        X_val=X_test.to_numpy(),
-        y_val=y_test.to_numpy().ravel(),
-        columns=X_test.columns,
-        n_samples=n_samples,
-        filename="pfi",
-    )
+    # analytics.plot_pfi(
+    #     model=model.model,
+    #     X_val=X_test.to_numpy(),
+    #     y_val=y_test.to_numpy().ravel(),
+    #     columns=X_test.columns,
+    #     n_samples=n_samples,
+    #     filename="pfi",
+    # )
     analytics.plot_pdp(
         model=model.model,
         X=X_test,

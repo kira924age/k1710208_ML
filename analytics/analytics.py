@@ -2,13 +2,39 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 import seaborn as sns
+from ml_model.ml_model import ML_model
 from sklearn.inspection import (PartialDependenceDisplay, partial_dependence,
                                 permutation_importance)
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import KFold
 
 
 class Analytics:
     def __init__(self, output_dir):
         self.output_dir = output_dir
+
+    def get_cv_score(self, X, y, algorithm):
+        kf = KFold(n_splits=5, shuffle=True, random_state=42)
+        maes = []
+
+        for i, (train_index, val_index) in enumerate(kf.split(X)):
+            X_train, X_val = X[train_index], X[val_index]
+            y_train, y_val = y[train_index], y[val_index]
+
+            model = ML_model(
+                X_train=X_train,
+                y_train=y_train,
+                algorithm=algorithm,
+            )
+
+            y_pred = model.predict(X_val)
+            mae = mean_absolute_error(y_pred, y_val.to_series().to_numpy())
+            maes.append(mae)
+
+            print(f"Fold {i}:")
+            print(f"  MAE: {mae}")
+
+        print(f"mean mae: {sum(maes) / len(maes):.3f}")
 
     def plot_true_vs_predicted_graph(self, y_true, y_pred, title, filename):
         y_max = max(y_pred.max(), y_true.max())
@@ -76,7 +102,8 @@ class Analytics:
         plt.close()
 
     def plot_pdp(self, model, X, filename):
-        target_idx = 0
+        # target_idx = 0
+        target_idx = X.columns.index("BCUTdv-1l")
         # target_idx = X.columns.index("weighted_mean_unfilled_d_states")
         # target_idx = X.columns.index("weighted_mean_group")
 
